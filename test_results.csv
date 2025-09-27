@@ -1,0 +1,6 @@
+,TestCase,Status,Duration
+0,TC1,Passed,12
+1,TC2,Failed,15
+2,TC3,Passed,20
+3,TC4,Failed,18
+4,TC5,Passed,25
