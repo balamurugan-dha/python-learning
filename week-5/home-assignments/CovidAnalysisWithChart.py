@@ -1,4 +1,8 @@
 import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
+
 
 class COVIDDataLoader:
     
@@ -230,14 +234,14 @@ class COVIDAnalyzer(COVIDDataLoader):
             self.filter_low_cases,
             self.region_highest_confirmed,
             self.sort_by_confirmed_cases,
-            # self.top_5_countries,
-            # self.region_lowest_deaths,
-            # self.india_case_summary,
-            # self.calculate_mortality_rate,
-            # self.compare_recovery_rates,
-            # self.detect_outliers,
-            # self.group_by_country_region,
-            # self.regions_zero_recovered
+            self.top_5_countries,
+            self.region_lowest_deaths,
+            self.india_case_summary,
+            self.calculate_mortality_rate,
+            self.compare_recovery_rates,
+            self.detect_outliers,
+            self.group_by_country_region,
+            self.regions_zero_recovered
         ]
         print(type(analyses))
         for i, analysis in enumerate(analyses, 1):
@@ -246,13 +250,255 @@ class COVIDAnalyzer(COVIDDataLoader):
             except Exception as e:
                 print(f"Error in analysis {i}: {e}")
 
+class CovidVisualization(COVIDAnalyzer):
+    
+    def __init__(self, file_path):
+        super().__init__(file_path)
+    
+
+
+    def bar_chart_top_10_confirmed(self):
+        #------------------------------------------------------------
+        # 1. Bar Chart of Top 10 Countries by Confirmed Cases
+        #------------------------------------------------------------
+        if self.data is None:
+            print("No data available for visualization")
+            return
+        
+        top_10 = self.data.nlargest(10, 'Confirmed')
+        
+        plt.figure(figsize=(12, 6))
+        plt.bar(top_10['Country/Region'], top_10['Confirmed'], color='skyblue')
+        plt.title('Top 10 Countries by Confirmed COVID-19 Cases')
+        plt.xlabel('Countries')
+        plt.ylabel('Confirmed Cases')
+        plt.xticks(rotation=45)
+        plt.gca().yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: f'{x:,.0f}'))
+        plt.tight_layout()
+        plt.show()
+        
+        return top_10
+    
+
+
+    def pie_chart_global_deaths_by_region(self):
+        #------------------------------------------------------------
+        # 2. Pie Chart of Global Death Distribution by Region
+        #------------------------------------------------------------
+        if self.data is None:
+            print("No data available for visualization")
+            return
+        
+        deaths_by_region = self.data.groupby('WHO Region')['Deaths'].sum()
+        
+        plt.figure(figsize=(8, 8))
+        plt.pie(deaths_by_region, labels=deaths_by_region.index, autopct='%1.1f%%')
+        plt.title('Global COVID-19 Death Distribution by WHO Region')
+        plt.show()
+        
+        return deaths_by_region
+    
+
+
+    def line_chart_comparison_top_5(self):
+        #------------------------------------------------------------------
+        #3. Line Chart comparing Confirmed and Deaths for Top 5 Countries
+        #------------------------------------------------------------------
+        if self.data is None:
+            print("No data available for visualization")
+            return
+        
+        top_5 = self.data.nlargest(5, 'Confirmed')
+        
+        plt.figure(figsize=(10, 6))
+        plt.plot(top_5['Country/Region'], top_5['Confirmed'], marker='P', label='Confirmed Cases')
+        plt.plot(top_5['Country/Region'], top_5['Deaths'], marker='s', label='Deaths')
+        plt.title('Confirmed Cases vs Deaths - Top 5 Countries')
+        plt.xlabel('Countries')
+        plt.ylabel('Number of Cases')
+        plt.legend()
+        plt.xticks(rotation=0)
+        plt.gca().yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: f'{x:,.0f}'))
+        plt.tight_layout()
+        plt.show()
+        
+        return top_5
+        
+        
+
+    def scatter_plot_confirmed_vs_recovered(self):
+        #------------------------------------------------------------
+        # 4. Scatter Plot of Confirmed Cases vs Recovered Cases
+        #------------------------------------------------------------
+        if self.data is None:
+            print("No data available for visualization")
+            return
+        
+        plt.figure(figsize=(8, 6))
+        plt.scatter(self.data['Confirmed'], self.data['Recovered'], alpha=0.8)
+        plt.title('Confirmed Cases vs Recovered Cases')
+        plt.xlabel('Confirmed Cases')
+        plt.ylabel('Recovered Cases') 
+        plt.gca().xaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: f'{x:,.0f}'))
+        plt.gca().yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: f'{x:,.0f}'))
+        plt.grid(True, alpha=0.8)
+        plt.tight_layout()
+        plt.show()
+        
+        return self.data[['Confirmed', 'Recovered']]
+    
+
+    def histogram_death_counts(self):
+        #------------------------------------------------------------
+        # 5. Histogram of Death Counts across all Regions
+        #------------------------------------------------------------
+        if self.data is None:
+            print("No data available for visualization")
+            return
+    
+        plt.figure(figsize=(10, 6))
+        plt.hist(self.data['Deaths'], bins=20, edgecolor='black', alpha=0.7)
+    
+        plt.title('Distribution of Death Counts Across All Countries')
+        plt.xlabel('Death Counts')
+        plt.ylabel('Number of Countries')
+        plt.grid(True, alpha=0.3)
+        plt.tight_layout()
+        plt.show()
+    
+        return self.data['Deaths']
 
 
 
-# Main execution
+    def stacked_bar_chart_selected_countries(self):
+        #-----------------------------------------------------------------------------------
+        # 6. Stacked Bar Chart of Confirmed, Deaths, and Recovered for 5 Selected Countries
+        #-----------------------------------------------------------------------------------
+        if self.data is None:
+            print("No data available for visualization")
+            return
+        
+        selected_countries = self.data.nlargest(5, 'Confirmed')
+        
+        plt.figure(figsize=(10, 6))
+        
+        countries = selected_countries['Country/Region']
+        confirmed = selected_countries['Confirmed']
+        deaths = selected_countries['Deaths']
+        recovered = selected_countries['Recovered']
+        
+        plt.bar(countries, recovered, label='Recovered')
+        plt.bar(countries, deaths, bottom=recovered, label='Deaths')
+        plt.bar(countries, confirmed - recovered - deaths, bottom=recovered + deaths, label='Active')
+        
+        plt.title('COVID-19 Case Distribution for Top 5 Countries')
+        plt.xlabel('Countries')
+        plt.ylabel('Number of Cases')
+        plt.legend()
+        plt.xticks(rotation=45)
+        plt.gca().yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: f'{x:,.0f}'))
+        plt.tight_layout()
+        plt.show()
+        
+        return selected_countries
+    
+
+
+    def box_plot_confirmed_by_region(self):
+        #------------------------------------------------------------
+        # 7. Box Plot of Confirmed Cases across Regions
+        #------------------------------------------------------------
+        if self.data is None:
+            print("No data available for visualization")
+            return
+        
+        # Prepare data for box plot
+        regions_data = []
+        region_names = []
+        
+        for region in self.data['WHO Region'].unique():
+            region_data = self.data[self.data['WHO Region'] == region]['Confirmed']
+            regions_data.append(region_data)
+            region_names.append(region)
+        
+        plt.figure(figsize=(10, 6))
+        plt.boxplot(regions_data, labels=region_names)
+        plt.title('Distribution of Confirmed Cases Across WHO Regions')
+        plt.xlabel('WHO Regions')
+        plt.ylabel('Confirmed Cases')
+        plt.xticks(rotation=45)
+        plt.gca().yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: f'{x:,.0f}'))
+        plt.tight_layout()
+        plt.show()
+        
+        return regions_data
+    
+
+    def trend_line_india_vs_other(self):
+        #----------------------------------------------------------------------------
+        # 8. Trend Line: Plot Confirmed cases for India vs another chosen country
+        #----------------------------------------------------------------------------
+        if self.data is None:
+            print("No data available for visualization")
+            return
+        
+        india_data = self.data[self.data['Country/Region'] == 'India']
+        us_data = self.data[self.data['Country/Region'] == 'US']
+        
+        if india_data.empty or us_data.empty:
+            print("Data not available for India or US")
+            return
+        
+        metrics = ['Confirmed', 'Deaths', 'Recovered', 'Active']
+        india_values = [india_data[metric].iloc[0] for metric in metrics]
+        us_values = [us_data[metric].iloc[0] for metric in metrics]
+        
+        plt.figure(figsize=(10, 6))
+        
+        x_pos = range(len(metrics))
+        plt.plot(x_pos, india_values, marker='o', label='India', linewidth=2)
+        plt.plot(x_pos, us_values, marker='s', label='US', linewidth=2)
+        
+        plt.title('COVID-19 Metrics: India vs US')
+        plt.xlabel('Metrics')
+        plt.ylabel('Number of Cases')
+        plt.xticks(x_pos, metrics)
+        plt.legend()
+        plt.gca().yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: f'{x:,.0f}'))
+        plt.grid(True, alpha=0.8)
+        plt.tight_layout()
+        plt.show()
+        
+        return {'India': india_values, 'US': us_values, 'Metrics': metrics}
+    
+
+
+    def run_all_visualizations(self):
+        
+        visualizations = [
+            self.bar_chart_top_10_confirmed,
+            self.pie_chart_global_deaths_by_region,
+            self.line_chart_comparison_top_5,
+            self.scatter_plot_confirmed_vs_recovered,
+            self.histogram_death_counts,
+            self.stacked_bar_chart_selected_countries,
+            self.box_plot_confirmed_by_region,
+            self.trend_line_india_vs_other
+        ]
+        
+        for i, viz_func in enumerate(visualizations, 1):
+            try:
+                viz_func()
+            except Exception as e:
+                print(f"Visualization {i}: Error - {e}")
+
+
+
 if __name__ == "__main__":
-    analyzer = COVIDAnalyzer('country_wise_latest.csv')
-    
-    analyzer.get_basic_info()
-    
-    analyzer.run_all_analyses()
+    # analyzer = COVIDAnalyzer('country_wise_latest.csv')
+    # analyzer.get_basic_info()
+    # analyzer.run_all_analyses()
+
+    visualizer = CovidVisualization('country_wise_latest.csv')
+    visualizer.get_basic_info()
+    visualizer.run_all_visualizations()
