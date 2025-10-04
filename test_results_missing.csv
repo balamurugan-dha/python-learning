@@ -1,0 +1,6 @@
+TestCase,Module,Status,Duration,Defects
+TC1,Login,Passed,12.0,0.0
+TC2,Login,Failed,,2.0
+TC3,Payment,Passed,20.0,
+TC4,Payment,Failed,18.0,3.0
+TC5,Reports,,25.0,0.0
