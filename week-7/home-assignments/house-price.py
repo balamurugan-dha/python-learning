@@ -7,7 +7,7 @@ from sklearn.metrics import mean_squared_error, r2_score
 
 # 1. Load the Dataset
 df = pd.read_csv('house_price_regression_dataset.csv')
-df = df[['Square_Footage', 'House_Price']]  # Keep only required columns
+df = df[['Square_Footage', 'House_Price']]
 
 # 2. Exploratory Data Analysis (EDA)
 print("First few rows of the dataset:")
@@ -18,13 +18,13 @@ print("\nMissing values:")
 print(df.isnull().sum())
 
 # Scatter plot
-plt.figure(figsize=(10, 6))
-plt.scatter(df['Square_Footage'], df['House_Price'], alpha=0.6)
-plt.title('Relationship between Square Footage and House Price')
-plt.xlabel('Square Footage')
-plt.ylabel('House Price')
-plt.grid(True)
-plt.show()
+# plt.figure(figsize=(10, 6))
+# plt.scatter(df['Square_Footage'], df['House_Price'], alpha=0.6)
+# plt.title('Relationship between Square Footage and House Price')
+# plt.xlabel('Square Footage')
+# plt.ylabel('House Price')
+# plt.grid(True)
+# plt.show()
 
 # 3. Feature and Target Selection
 X = df[['Square_Footage']]
@@ -55,24 +55,55 @@ print(f"R² Score: {r2:.4f}")
 # Regression line plot
 plt.figure(figsize=(12, 5))
 
-# Plot 1: Regression line with actual data
-plt.subplot(1, 2, 1)
-plt.scatter(X_test, y_test, alpha=0.6, label='Actual Prices')
-plt.plot(X_test, y_pred, color='red', linewidth=2, label='Regression Line')
-plt.title('Regression Line vs Actual Data')
-plt.xlabel('Square Footage')
-plt.ylabel('House Price')
-plt.legend()
-plt.grid(True)
+# # Plot 1: Regression line with actual data points
+# plt.subplot(1, 2, 1)
+# plt.scatter(X_test, y_test, alpha=0.6, label='Actual Prices')
+# plt.plot(X_test, y_pred, color='red', linewidth=2, label='Regression Line')
+# plt.title('Regression Line vs Actual Data')
+# plt.xlabel('Square Footage')
+# plt.ylabel('House Price')
+# plt.legend()
+# plt.grid(True)
 
-# Plot 2: Actual vs Predicted prices
-plt.subplot(1, 2, 2)
-plt.scatter(y_test, y_pred, alpha=0.6)
-plt.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], 'r--', lw=2)
-plt.title('Actual vs Predicted Prices')
-plt.xlabel('Actual Prices')
-plt.ylabel('Predicted Prices')
-plt.grid(True)
+# # Plot 2: Actual vs Predicted prices
+# plt.subplot(1, 2, 2)
+# plt.scatter(y_test, y_pred, alpha=0.6)
+# plt.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], 'r--', lw=2)
+# plt.title('Actual vs Predicted Prices')
+# plt.xlabel('Actual Prices')
+# plt.ylabel('Predicted Prices')
+# plt.grid(True)
 
-plt.tight_layout()
-plt.show()
+# plt.tight_layout()
+# plt.show()
+
+
+# 8. House price prediction function
+
+def predict_house_price():
+    # Show additional context
+    min_sqft = df['Square_Footage'].min()
+    max_sqft = df['Square_Footage'].max()
+    print(f"\nDataset range: {min_sqft:,} to {max_sqft:,} sq.ft")
+    while True:
+        try:            
+            user_input = input("Enter a positive number within dataset range for square footage: ")
+            
+            if user_input.lower() == 'quit':
+                print("Thank you for using the House Price Predictor!")
+                break
+
+            square_footage = float(user_input)
+
+
+            input_df = pd.DataFrame([[user_input]], columns=['Square_Footage'])
+            predicted_price = model.predict(input_df)[0]
+            
+            print(f"Square Footage: {square_footage:,} sq.ft")
+            print(f"Predicted Price: ${predicted_price:,.2f}")
+            
+        except Exception as e:
+            print(f"An error occurred: {e}")
+
+# Run the prediction tool
+predict_house_price()
